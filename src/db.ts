@@ -1,4 +1,6 @@
 import SqlHelper from 'mssql-by-steve';
+import dotenv from 'dotenv';
+dotenv.config();
 
 SqlHelper.initialize({
     user: process.env.db_user || "",
