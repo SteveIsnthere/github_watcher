@@ -15,6 +15,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.post('/', async (req: Request, res: Response) => {
     await processWebhook(req.body as GithubPushPayload);
+    console.log('Webhook processed');
     res.send('');
 });
 
