@@ -1,3 +1,34 @@
+export interface Repository {
+    repo_id: number;
+    name: string;
+    full_name: string;
+    private: boolean;
+    html_url: string;
+    description: string | null;
+    created_at: Date;
+    language: string | null;
+    default_branch: string;
+}
+
+export interface User {
+    username: string;
+    name: string | null;
+    email: string | null;
+}
+
+export interface Commit {
+    commit_id: string;
+    repo_id: number;
+    author_username: string;
+    committer_username: string;
+    message: string;
+    timestamp: Date;
+    url: string;
+    added_files: string;    // JSON string
+    removed_files: string;  // JSON string
+    modified_files: string; // JSON string
+}
+
 export interface GithubPushPayload {
     ref: string;
     before: string;
@@ -180,3 +211,4 @@ export interface GithubPushPayload {
         modified: string[];
     };
 }
+
