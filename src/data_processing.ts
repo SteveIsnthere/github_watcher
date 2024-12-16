@@ -3,6 +3,8 @@ import SqlHelper from "./db";
 
 export async function processWebhook(payload: GithubPushPayload) {
     try {
+        console.log('Processing: ', payload.repository.name + ' with ' + payload.commits.length + ' commits');
+
         // 1. Insert/update repository
         const repository: Repository = {
             repo_id: payload.repository.id,
@@ -45,15 +47,15 @@ export async function processWebhook(payload: GithubPushPayload) {
                 INSERT (repo_id, name, full_name, private, html_url, description, created_at, language, default_branch)
                 VALUES (source.repo_id, source.name, source.full_name, source.private, source.html_url, source.description, source.created_at, source.language, source.default_branch);
         `, [
-            { name: 'repo_id', value: repository.repo_id },
-            { name: 'name', value: repository.name },
-            { name: 'full_name', value: repository.full_name },
-            { name: 'private', value: repository.private },
-            { name: 'html_url', value: repository.html_url },
-            { name: 'description', value: repository.description },
-            { name: 'created_at', value: repository.created_at },
-            { name: 'language', value: repository.language },
-            { name: 'default_branch', value: repository.default_branch }
+            {name: 'repo_id', value: repository.repo_id},
+            {name: 'name', value: repository.name},
+            {name: 'full_name', value: repository.full_name},
+            {name: 'private', value: repository.private},
+            {name: 'html_url', value: repository.html_url},
+            {name: 'description', value: repository.description},
+            {name: 'created_at', value: repository.created_at},
+            {name: 'language', value: repository.language},
+            {name: 'default_branch', value: repository.default_branch}
         ]);
 
         // Process each commit
@@ -82,9 +84,9 @@ export async function processWebhook(payload: GithubPushPayload) {
                     INSERT (username, name, email)
                     VALUES (source.username, source.name, source.email);
             `, [
-                { name: 'username', value: author.username },
-                { name: 'name', value: author.name },
-                { name: 'email', value: author.email }
+                {name: 'username', value: author.username},
+                {name: 'name', value: author.name},
+                {name: 'email', value: author.email}
             ]);
 
             // Insert/update committer (might be the same as author)
@@ -111,9 +113,9 @@ export async function processWebhook(payload: GithubPushPayload) {
                     INSERT (username, name, email)
                     VALUES (source.username, source.name, source.email);
             `, [
-                { name: 'username', value: committer.username },
-                { name: 'name', value: committer.name },
-                { name: 'email', value: committer.email }
+                {name: 'username', value: committer.username},
+                {name: 'name', value: committer.name},
+                {name: 'email', value: committer.email}
             ]);
 
             // Insert commit
@@ -142,20 +144,19 @@ export async function processWebhook(payload: GithubPushPayload) {
                     @message, @timestamp, @url, @added_files, @removed_files, @modified_files
                 )
             `, [
-                { name: 'commit_id', value: commitRecord.commit_id },
-                { name: 'repo_id', value: commitRecord.repo_id },
-                { name: 'author_username', value: commitRecord.author_username },
-                { name: 'committer_username', value: commitRecord.committer_username },
-                { name: 'message', value: commitRecord.message },
-                { name: 'timestamp', value: commitRecord.timestamp },
-                { name: 'url', value: commitRecord.url },
-                { name: 'added_files', value: commitRecord.added_files },
-                { name: 'removed_files', value: commitRecord.removed_files },
-                { name: 'modified_files', value: commitRecord.modified_files }
+                {name: 'commit_id', value: commitRecord.commit_id},
+                {name: 'repo_id', value: commitRecord.repo_id},
+                {name: 'author_username', value: commitRecord.author_username},
+                {name: 'committer_username', value: commitRecord.committer_username},
+                {name: 'message', value: commitRecord.message},
+                {name: 'timestamp', value: commitRecord.timestamp},
+                {name: 'url', value: commitRecord.url},
+                {name: 'added_files', value: commitRecord.added_files},
+                {name: 'removed_files', value: commitRecord.removed_files},
+                {name: 'modified_files', value: commitRecord.modified_files}
             ]);
         }
     } catch (error) {
         console.error('Error processing webhook:', error);
-        throw error;
     }
 }
