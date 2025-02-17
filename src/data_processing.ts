@@ -1,5 +1,49 @@
 import {Commit, GithubPushPayload, Repository, User} from "./model";
 import SqlHelper from "./db";
+import {exec} from "child_process";
+
+interface NextAppConfig {
+    repoName: string; // as it appears in the payload, e.g. "my-next-app"
+    localPath: string; // absolute path to the app
+    processName: string; // name as registered in PM2
+}
+
+const nextApps: NextAppConfig[] = [
+    {
+        repoName: "ai-workbench-by-steve",
+        localPath: "../ai-workbench-by-steve",
+        processName: "ai-workbench",
+    },
+    {
+        repoName: "steves_portal",
+        localPath: "../steves_portal",
+        processName: "steves_portal",
+    },
+];
+
+function deployNextApp(app: NextAppConfig, branch: string) {
+    // Construct the command to run
+    // Adjust the commands as necessary for your project
+    const command = `
+    cd ${app.localPath} && \
+    git pull origin ${branch} && \
+    npm install && \
+    npm run build && \
+    pm2 restart ${app.processName}
+  `;
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error deploying ${app.repoName}:`, error);
+            return;
+        }
+        console.log(`Deployment of ${app.repoName} successful:`, stdout);
+        if (stderr) {
+            console.error(`Deployment warnings for ${app.repoName}:`, stderr);
+        }
+    });
+}
+
 
 export async function processWebhook(payload: GithubPushPayload) {
     try {
@@ -155,6 +199,13 @@ export async function processWebhook(payload: GithubPushPayload) {
                 {name: 'removed_files', value: commitRecord.removed_files},
                 {name: 'modified_files', value: commitRecord.modified_files}
             ]);
+        }
+
+        const matchingApp = nextApps.find((app) => app.repoName === payload.repository.name);
+
+        const defaultBranch = payload.repository.default_branch;
+        if (matchingApp && payload.ref === `refs/heads/${defaultBranch}`) {
+            deployNextApp(matchingApp, defaultBranch);
         }
     } catch (error) {
         console.error('Error processing webhook:', error);
