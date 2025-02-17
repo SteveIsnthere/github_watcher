@@ -22,24 +22,29 @@ const nextApps: NextAppConfig[] = [
 ];
 
 function deployNextApp(app: NextAppConfig, branch: string) {
-    // Construct the command to run
-    // Adjust the commands as necessary for your project
+    // Build the command using an array to ensure proper spacing
+    const commands = [
+        `cd ${app.localPath}`,
+        `git pull origin ${branch}`,
+        'npm install',
+        'npm run build',
+        `pm2 restart ${app.processName}`
+    ];
+    const command = commands.join(' && ');
 
     console.log(`Deploying ${app.repoName}...`);
-
-    const command = `
-    cd ${app.localPath} && \
-    git pull origin ${branch} && \
-    npm install && \
-    npm run build && \
-    pm2 restart ${app.processName}
-  `;
+    console.log('Executing command:', command);
 
     exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error deploying ${app.repoName}:`, error);
+            // Optionally log stderr for more context
+            if (stderr) {
+                console.error(`Deployment stderr for ${app.repoName}:`, stderr);
+            }
             return;
         }
+
         console.log(`Deployment of ${app.repoName} successful`);
         if (stdout) {
             console.log(`Deployment output for ${app.repoName}:`, stdout);
@@ -49,6 +54,34 @@ function deployNextApp(app: NextAppConfig, branch: string) {
         }
     });
 }
+// function deployNextApp(app: NextAppConfig, branch: string) {
+//     // Construct the command to run
+//     // Adjust the commands as necessary for your project
+//
+//     console.log(`Deploying ${app.repoName}...`);
+//
+//     const command = `
+//     cd ${app.localPath} && \
+//     git pull origin ${branch} && \
+//     npm install && \
+//     npm run build && \
+//     pm2 restart ${app.processName}
+//   `;
+//
+//     exec(command, (error, stdout, stderr) => {
+//         if (error) {
+//             console.error(`Error deploying ${app.repoName}:`, error);
+//             return;
+//         }
+//         console.log(`Deployment of ${app.repoName} successful`);
+//         if (stdout) {
+//             console.log(`Deployment output for ${app.repoName}:`, stdout);
+//         }
+//         if (stderr) {
+//             console.error(`Deployment warnings for ${app.repoName}:`, stderr);
+//         }
+//     });
+// }
 
 
 export async function processWebhook(payload: GithubPushPayload) {
