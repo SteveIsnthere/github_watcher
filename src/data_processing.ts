@@ -1,6 +1,8 @@
 import {Commit, GithubPushPayload, Repository, User} from "./model";
 import SqlHelper from "./db";
 import {exec} from "child_process";
+import {spawn} from 'child_process';
+
 
 interface NextAppConfig {
     repoName: string; // as it appears in the payload, e.g. "my-next-app"
@@ -21,9 +23,9 @@ const nextApps: NextAppConfig[] = [
     },
 ];
 
-function deployNextApp(app: NextAppConfig, branch: string) {
-    // Build the command using an array to ensure proper spacing
-    const commands = [
+function deployNextApp(app: NextAppConfig, branch: string): void {
+    // Build the command string
+    const commands: string[] = [
         `cd ${app.localPath}`,
         `git pull origin ${branch}`,
         'npm install',
@@ -35,22 +37,30 @@ function deployNextApp(app: NextAppConfig, branch: string) {
     console.log(`Deploying ${app.repoName}...`);
     console.log('Executing command:', command);
 
-    // Increase the maxBuffer to 10 MB (adjust as necessary)
-    exec(command, {maxBuffer: 1024 * 1024 * 10}, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error deploying ${app.repoName}:`, error);
-            if (stderr) {
-                console.error(`Deployment stderr for ${app.repoName}:`, stderr);
-            }
-            return;
-        }
+    // Spawn the command in a shell to stream the output
+    const child = spawn(command, { shell: true });
 
-        console.log(`Deployment of ${app.repoName} successful`);
-        if (stdout) {
-            console.log(`Deployment output for ${app.repoName}:`, stdout);
-        }
-        if (stderr) {
-            console.error(`Deployment warnings for ${app.repoName}:`, stderr);
+    // Listen to stdout data
+    child.stdout.on('data', (data: Buffer) => {
+        console.log(`stdout: ${data.toString()}`);
+    });
+
+    // Listen to stderr data
+    child.stderr.on('data', (data: Buffer) => {
+        console.error(`stderr: ${data.toString()}`);
+    });
+
+    // Handle errors
+    child.on('error', (error: Error) => {
+        console.error(`Error deploying ${app.repoName}:`, error);
+    });
+
+    // Handle process close event
+    child.on('close', (code: number) => {
+        if (code === 0) {
+            console.log(`Deployment of ${app.repoName} successful`);
+        } else {
+            console.error(`Deployment of ${app.repoName} failed with exit code ${code}`);
         }
     });
 }
