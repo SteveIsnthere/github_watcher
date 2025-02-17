@@ -24,12 +24,12 @@ const nextApps: NextAppConfig[] = [
 ];
 
 function deployNextApp(app: NextAppConfig, branch: string): void {
-    // Build the command string
     const commands: string[] = [
         `cd ${app.localPath}`,
         `git pull origin ${branch}`,
         'npm install',
         'npm run build',
+        'cd ../',
         `pm2 restart ${app.processName}`
     ];
     const command = commands.join(' && ');
