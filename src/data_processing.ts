@@ -40,7 +40,10 @@ function deployNextApp(app: NextAppConfig, branch: string) {
             console.error(`Error deploying ${app.repoName}:`, error);
             return;
         }
-        console.log(`Deployment of ${app.repoName} successful:`, stdout);
+        console.log(`Deployment of ${app.repoName} successful`);
+        if (stdout) {
+            console.log(`Deployment output for ${app.repoName}:`, stdout);
+        }
         if (stderr) {
             console.error(`Deployment warnings for ${app.repoName}:`, stderr);
         }
