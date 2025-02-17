@@ -35,10 +35,10 @@ function deployNextApp(app: NextAppConfig, branch: string) {
     console.log(`Deploying ${app.repoName}...`);
     console.log('Executing command:', command);
 
-    exec(command, (error, stdout, stderr) => {
+    // Increase the maxBuffer to 10 MB (adjust as necessary)
+    exec(command, {maxBuffer: 1024 * 1024 * 10}, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error deploying ${app.repoName}:`, error);
-            // Optionally log stderr for more context
             if (stderr) {
                 console.error(`Deployment stderr for ${app.repoName}:`, stderr);
             }
@@ -54,6 +54,7 @@ function deployNextApp(app: NextAppConfig, branch: string) {
         }
     });
 }
+
 // function deployNextApp(app: NextAppConfig, branch: string) {
 //     // Construct the command to run
 //     // Adjust the commands as necessary for your project
