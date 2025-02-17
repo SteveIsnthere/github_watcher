@@ -24,6 +24,9 @@ const nextApps: NextAppConfig[] = [
 function deployNextApp(app: NextAppConfig, branch: string) {
     // Construct the command to run
     // Adjust the commands as necessary for your project
+
+    console.log(`Deploying ${app.repoName}...`);
+
     const command = `
     cd ${app.localPath} && \
     git pull origin ${branch} && \
